@@ -485,4 +485,46 @@ npm install vue@next --save
   </script>
   ```
 
+- [watch](https://v3.cn.vuejs.org/api/computed-watch-api.html#watch) watch 与 Options API this.$watch(以及相应的 watch 选项) 完全等效
+
+  ```js
+  createApp({
+    setup() {
+      const question = ref('')
+      const answer = ref('')
+
+      watch(question, async (newValue, oldValue) => {
+        const response = await fetch('https://www.yesno.wtf/api')
+        const data = await response.json()
+        answer.value = data.answer
+      })
+      return {
+        question,
+        answer,
+      }
+    },
+  }).mount('#app')
+  ```
+
+- [watchEffect](https://v3.cn.vuejs.org/api/computed-watch-api.html#watcheffect) 在响应式地跟踪其依赖项时立即运行一个函数，并在更改依赖项时重新运行它
+
+  ```js
+  createApp({
+    setup() {
+      const count = ref(0)
+      const stop = watchEffect(() => {
+        console.log(count.value)
+      })
+
+      return {
+        count,
+        stop,
+        increase: () => {
+          count.value++
+        },
+      }
+    },
+  }).mount('#app')
+  ```
+
 -
