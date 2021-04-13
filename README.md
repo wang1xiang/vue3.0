@@ -332,85 +332,157 @@ npm init --yes
 npm install vue@next --save
 ```
 
-```html
-<!-- 01-createApp.html  -->
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>createApp & reactive</title>
-  </head>
-  <body>
-    <div id="app">
-      x: {{ position.x }}<br />
-      y: {{ position.y }}
-    </div>
-    <script type="module">
-      import {
-        createApp,
-        reactive,
-      } from './node_modules/vue/dist/vue.esm-browser.js'
+- [reactive](https://v3.cn.vuejs.org/api/basic-reactivity.html#reactive)返回对象的响应式副本
 
-      const app = createApp({
-        setup() {
-          // reactive用于设置对象响应式
-          const position = reactive({
-            x: 0,
-            y: 0,
-          })
-          return {
-            position,
-          }
-        },
-        mounted() {
-          this.position.x = 100
-        },
-      })
-      app.mount('#app')
-    </script>
-  </body>
-</html>
-```
+  ```html
+  <!-- 01-createApp.html  -->
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>createApp & reactive</title>
+    </head>
+    <body>
+      <div id="app">
+        x: {{ position.x }}<br />
+        y: {{ position.y }}
+      </div>
+      <script type="module">
+        import {
+          createApp,
+          reactive,
+        } from './node_modules/vue/dist/vue.esm-browser.js'
 
-可以将鼠标移动的相关的参数和方法统一封装在一个函数中
+        const app = createApp({
+          setup() {
+            // reactive用于设置对象响应式
+            const position = reactive({
+              x: 0,
+              y: 0,
+            })
+            return {
+              position,
+            }
+          },
+          mounted() {
+            this.position.x = 100
+          },
+        })
+        app.mount('#app')
+      </script>
+    </body>
+  </html>
+  ```
 
-```js
-// 将鼠标移动相关统一放在一起
-function useMousePosition() {
+  可以将鼠标移动的相关的参数和方法统一封装在一个函数中，使用[toRefs](https://v3.cn.vuejs.org/api/refs-api.html#torefs)将响应式对象转换为普通对象
+
+  ```js
+  // 将鼠标移动相关统一放在一起
+  function useMousePosition() {
     const position = reactive({
-        x: 0,
-        y: 0,
+      x: 0,
+      y: 0,
     })
 
     const update = (e) => {
-        position.x = e.pageX
-        position.y = e.pageY
+      position.x = e.pageX
+      position.y = e.pageY
     }
 
     onMounted(() => {
-        window.addEventListener('mousemove', update)
+      window.addEventListener('mousemove', update)
     })
 
     onUnmounted(() => {
-        window.removeEventListener('mousemove', update)
+      window.removeEventListener('mousemove', update)
     })
-	// 返回时转换为ref
+    // 返回时转换为ref
     return toRefs(position)
-}
-```
+  }
+  ```
 
-然后在setup函数中使用
+  然后在 setup 函数中使用
 
-```js
-setup() {
-	// 通过toRefs可以在不失去响应性的情况下解构
-    const { x, y } = useMousePosition()
-    return {
-        x,
-        y,
+  ```js
+  setup() {
+  	// 通过toRefs可以在不失去响应性的情况下解构
+      const { x, y } = useMousePosition()
+      return {
+          x,
+          y,
+      }
+  }
+  ```
+
+- [ref](https://v3.cn.vuejs.org/api/refs-api.html#ref) 接受一个内部值并返回一个响应式且可变的 ref 对象
+
+  ```html
+  ...
+  <div id="app">
+    <button @click="increase">增加</button>
+    <span>{{ count }}</span>
+  </div>
+  ...
+  <script type="module">
+    function useRef() {
+      const count = ref(0)
+
+      return {
+        count,
+        increase: () => {
+          //
+          count.value++
+        },
+      }
     }
-}
-```
+    const app = createApp({
+      setup() {
+        return {
+          ...useRef(),
+        }
+      },
+    })
+  </script>
+  ```
 
+- [computed](https://v3.cn.vuejs.org/api/computed-watch-api.html#computed) 接受一个 getter 函数，并为从 getter 返回的值返回一个不变的响应式 ref 对象
+
+  ```html
+  ...
+  <div id="app">
+    <button @click="push">按钮</button>
+    未完成：{{ activeCount }}
+  </div>
+  ...
+  <script type="module">
+    const data = [
+      { text: '看书', completed: false },
+      { text: '敲代码', completed: false },
+      { text: '约会', completed: true },
+    ]
+
+    createApp({
+      setup() {
+        const todos = reactive(data)
+
+        const activeCount = computed(() => {
+          return todos.filter((item) => !item.completed).length
+        })
+
+        return {
+          activeCount,
+          push: () => {
+            todos.push({
+              text: '开会',
+              completed: false,
+            })
+          },
+        }
+      },
+    }).mount('#app')
+  </script>
+  ```
+
+-
