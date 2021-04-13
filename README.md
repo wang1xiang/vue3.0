@@ -1,3 +1,5 @@
+#### Vue3.0介绍
+
 ##### 源码组织方式
 
 - 提升代码可维护性，源码采用TypeScript重写
@@ -18,7 +20,7 @@
 
   `size-check`是私有包，不会发布到npm，用于在tree-shaking后检查包的大小
 
-  `template-explorer`是在浏览器里运行的实时编译组件，会输出render函数，[在线访问地址]()
+  `template-explorer`是在浏览器里运行的实时编译组件，会输出render函数
 
   `vue`构建完整版vue，依赖于`compiler`和`runtime`
 
@@ -227,7 +229,7 @@ Composition API同一功能代码不需要拆分，有利于代码重用和维�
 
   在文档解析完成后，触发[DOMContentLoaded](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/DOMContentLoaded_event)事件前执行
 
-项目地址
+[案例项目地址](https://github.com/wang1xiang/vue3.0/tree/master/01-esmodule)
 
 ```html
 <!DOCTYPE html>
@@ -301,10 +303,22 @@ npm init vite-app --template react
 npm init vite-app --template preact
 ```
 
+[案例项目地址](https://github.com/wang1xiang/vue3.0/tree/master/02-vite-demo)
+
+通过create-vite-app创建完项目之后，App.vue会有eslint语法错误，原因是Vetur插件还没有更新
+
+![image-20210413113538441](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413113538441.png)
+
+解决：文件 --> 首选项 --> 设置 --> 搜索eslint-plugin-vue  --> Vetur › Validation: Template取消勾选
+
 ![image-20210413095847513](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413095847513.png)
+
+通过npm run dev启动项目
 
 开发环境下，vite开启web服务器后，会劫持.vue结尾的文件，将.vue文件转换为js文件，并将响应中的content-type设置为application/javascript，告诉浏览器是js脚本
 
 ![image-20210413085824316](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413085824316.png)
 
-生产环境下
+生成环境
+
+#### Composition API使用
