@@ -23,6 +23,7 @@
       createApp({
         setup() {
           const count = ref(0)
+          // 返回函数 取消对数据的监视
           const stop = watchEffect(() => {
             console.log(count.value)
           })
