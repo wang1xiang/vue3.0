@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>createApp & reactive</title>
+  </head>
+  <body>
+    <div id="app">
+      x: {{ x }}<br />
+      y: {{ y }}
+    </div>
+    <script type="module">
+      import {
+        createApp,
+        reactive,
+        onMounted,
+        onUnmounted,
+        toRefs,
+      } from './node_modules/vue/dist/vue.esm-browser.js'
+
+      // 将鼠标移动相关统一放在一起
+      function useMousePosition() {
+        const position = reactive({
+          x: 0,
+          y: 0,
+        })
+
+        const update = (e) => {
+          position.x = e.pageX
+          position.y = e.pageY
+        }
+
+        onMounted(() => {
+          window.addEventListener('mousemove', update)
+        })
+
+        onUnmounted(() => {
+          window.removeEventListener('mousemove', update)
+        })
+
+        return toRefs(position)
+      }
+
+      const app = createApp({
+        setup() {
+          const { x, y } = useMousePosition()
+          return {
+            x,
+            y,
+          }
+        },
+      })
+      app.mount('#app')
+    </script>
+  </body>
+</html>
