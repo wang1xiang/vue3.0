@@ -225,9 +225,51 @@ Composition API同一功能代码不需要拆分，有利于代码重用和维�
 
   类似于script标签设置defer
 
-  在文档解析完成后，触发DOMContentLoaded事件前执行
+  在文档解析完成后，触发[DOMContentLoaded](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/DOMContentLoaded_event)事件前执行
 
+项目地址
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app">Hello world!</div>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded')
+      })
+    </script>
+    <script type="module" src="./modules/index.js"></script>
+  </body>
+</html>
+```
+
+```js
+// modules/index.js
+import { forEach } from './utils.js'
+
+const app = document.querySelector('#app')
+console.log(app.innerHTML)
+
+const arr = [1, 2, 3]
+forEach(arr, (item) => {
+  console.log(item)
+})
+```
+
+`type="module"`方式引入时需要在服务器中运行项目，在vsCode中安装插件`live-server`，右键启动项目
+
+![image-20210413103509503](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413103509503.png)
+
+打开浏览器控制台，可以看到输出结果如下所示，可以看到`index.js`模块在文档解析完成后，触发DOMContentLoaded事件前执行
+
+![image-20210413085620461](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413085620461.png)
 
 Vite vs Vue-Cli
 
@@ -258,6 +300,8 @@ npm run dev
 npm init vite-app --template react
 npm init vite-app --template preact
 ```
+
+![image-20210413095847513](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210413095847513.png)
 
 开发环境下，vite开启web服务器后，会劫持.vue结尾的文件，将.vue文件转换为js文件，并将响应中的content-type设置为application/javascript，告诉浏览器是js脚本
 
