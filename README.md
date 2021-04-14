@@ -527,4 +527,72 @@ npm install vue@next --save
   }).mount('#app')
   ```
 
--
+[项目地址](https://github.com/wang1xiang/vue3.0/tree/master/03-composition-api)
+
+#### Vue.js3.0 响应式系统原理
+
+##### Vue.js响应式原理回顾
+
+- Proxy 对象实现属性监听
+- 多层属性嵌套,在访问属性过程中处理下一级属性
+- 默认监听动态添加的属性
+- 默认监听属性的删除操作
+- 默认监听数组索引和 length属性·可以作为单独的模块使用
+
+##### 核心方法
+
+- reactive/ref/toRefs/computed
+- effect watch/watchEffect是vue3 runtime.core中实现的，内部使用effect底层函数
+- track 手机依赖
+- trigger 触发更新
+
+##### 响应式系统原理——Proxy
+
+![image-20210414080553080](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080553080.png)
+
+![image-20210414080743227](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080743227.png)
+
+![image-20210414080825068](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080825068.png)
+
+##### 响应式系统原理——reactive
+
+- 接收一个参数，判断这参数是否是对象，不是直接返回，只能转换对象为响应式对象
+
+- 创建拦截器对象handler，设置get/set/deleteProperty
+
+- 返回Proxy 对象
+
+  reactive测试
+
+  ![image-20210414082410979](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414082410979.png)
+
+##### 响应式系统原理——收集依赖
+
+![image-20210414082624298](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414082624298.png)
+
+- 依赖收集过程中会创建3个集合，分别是targetMap、depsMap和dep
+- targetMap作用是记录目标对象和一个字典（depsMap），使用WeakMap弱引用，当目标对象失去引用之后，可以销毁
+- targetMap的值是depsMap，depsMap的key是目标对象的属性名称，值是一个set集合dep
+- dep中存储的是effect函数，因为可以多次调用一个effect，在effect中访问同一个属性，这时该属性会收集多次依赖，对应多个effect函数
+- 通过这种结构，可以存储目标对象，目标对象属性，以及属性对应的effect函数
+- 一个属性可能对应多个函数，当触发更新时，在这个结构中根据目标对象属性找到effect函数然后执行
+- 收集依赖的track函数内部，首先根据当前targetMap对象找到depsMap，如果没找到要给当前对象创建一个depsMap，并添加到targetMap中，如果找到了再根据当前使用的属性在depsMap找到对应的dep，dep中存储的是effect函数，如果没有找到时，为当前属性创建对应的dep集合，并且存储到depsMap中，如果找到当前属性对应的dep集合，就把当前的effect函数存储到集合中
+
+effect
+
+track
+
+trigger
+
+##### 响应式系统原理——ref
+
+ref vs reactive
+
+- ref可以把基本数据类型数据，转成响应式对象
+- ref返回的对象，重新赋值成对象也是响应式的
+- reactive返回的对象，重新赋值丢失响应式
+- reactive返回的对象不可以解构
+
+##### 响应式系统原理——toRefs
+
+##### 响应式系统原理——computed
