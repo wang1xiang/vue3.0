@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proxy</title>
+  </head>
+  <body>
+    <script>
+      'use strict'
+      // 1.set和deleteProperty需要返回布尔类型的值 在严格模式下如果返回false会出现type Error异常
+      const target = {
+        foo: 'xxx',
+        bar: 'yyy',
+      }
+      // Reflect.getPrototypeOf()
+      // Object.getPrototypeOf()
+      const proxy = new Proxy(target, {
+        // receiver代表当前的的Proxy对象或者继承Proxy的对象
+        get(target, key, receiver) {
+          // return target[key]
+          // Reflect反射，代码运行期间获取对象中的成员
+          return Reflect.get(target, key, receiver)
+        },
+        set(target, key, value, receiver) {
+          // target[key] = value
+          // Reflect.set设置成功返回true 设置失败返回false
+          return Reflect.set(target, key, value, receiver)
+        },
+        deleteProperty(target, key) {
+          // delete target[key]
+          return Reflect.deleteProperty(target, key)
+        },
+      })
+
+      proxy.foo = 'zzz'
+      delete proxy.foo
+      console.log(proxy)
+      // 2.Proxy 和 Reflect 中使用的 receiver
+      // Proxy 中 receiver：Proxy 或者继承 Proxy 的对象
+      // Reflect 中 receiver：如果 target 对象中设置了 getter，getter 中的 this 指向 receiver
+
+      const obj1 = {
+        get foo() {
+          console.log(this)
+          return this.bar
+        },
+      }
+
+      const proxy1 = new Proxy(obj1, {
+        get(target, key, receiver) {
+          if (key === 'bar') {
+            return 'value - boo'
+          }
+          return Reflect.get(target, key, receiver)
+        },
+      })
+      console.log(proxy1.foo)
+    </script>
+  </body>
+</html>

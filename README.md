@@ -533,7 +533,7 @@ npm install vue@next --save
 
 ##### Vue.js响应式原理回顾
 
-- Proxy 对象实现属性监听
+- [Proxy](https://es6.ruanyifeng.com/#docs/proxy)对象实现属性监听
 - 多层属性嵌套,在访问属性过程中处理下一级属性
 - 默认监听动态添加的属性
 - 默认监听属性的删除操作
@@ -548,9 +548,78 @@ npm install vue@next --save
 
 ##### 响应式系统原理——Proxy
 
-![image-20210414080553080](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080553080.png)
+[Proxy](https://es6.ruanyifeng.com/#docs/proxy)和[Reflect](https://es6.ruanyifeng.com/#docs/reflect)是ES6 为了操作对象而提供的新 API
+
+proxy中有两个需要注意的地方：
+
+- set 和 deleteProperty 中需要返回布尔类型的值
+
+  ```js
+  <script>
+        'use strict'
+        // set 和 deleteProperty 中需要返回布尔类型的值
+        // 在严格模式下，如果返回 false 的话会出现 Type Error 的异常
+        const target = {
+          foo: 'xxx',
+          bar: 'yyy'
+        }
+        // Reflect.getPrototypeOf()相当于Object.getPrototypeOf()
+        const proxy = new Proxy(target, {
+          // receiver代表当前的的Proxy对象或者继承Proxy的对象
+          get (target, key, receiver) {
+            // return target[key]
+            // Reflect反射，代码运行期间获取对象中的成员
+            return Reflect.get(target, key, receiver)
+          },
+          set (target, key, value, receiver) {
+            // target[key] = value
+            // Reflect.set设置成功返回true 设置失败返回false
+            return Reflect.set(target, key, value, receiver)
+          },
+          deleteProperty (target, key) {
+            // delete target[key]
+            return Reflect.deleteProperty(target, key)
+          }
+        })
+  
+        proxy.foo = 'zzz'
+        // delete proxy.foo
+  </script>
+  ```
+
+  如果set和deleteProperty返回false时，页面会报错
+
+  ![image-20210414080553080](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080553080.png)
+
+- Proxy 和 Reflect 中使用的 receiver指向
+
+  ```js
+  // Proxy 中 receiver：Proxy 或者继承 Proxy 的对象
+  // Reflect 中 receiver：如果 target 对象中设置了 getter，getter 中的 this 指向 receiver
+  
+  const obj = {
+      get foo() {
+          console.log(this)
+          return this.bar
+      },
+  }
+  
+  const proxy = new Proxy(obj, {
+      get(target, key, receiver) {
+          if (key === 'bar') {
+              return 'value - bar'
+          }
+          return Reflect.get(target, key, receiver)
+      },
+  })
+  console.log(proxy.foo)
+  ```
+
+  不传递receiver时，可以看到this返回的是obj对象，proxy.foo返回undefined
 
 ![image-20210414080743227](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080743227.png)
+
+​	当传递了receiver时，this指向Proxy对象
 
 ![image-20210414080825068](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414080825068.png)
 
