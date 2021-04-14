@@ -631,9 +631,114 @@ proxy中有两个需要注意的地方：
 
 - 返回Proxy 对象
 
-  reactive测试
+  ```js
+  // reactivily/index.js
+  const isObject = (val) => val !== null && typeof val === 'object'
+  export function reactive(target) {
+    if (!isObject(target)) return
+  
+    const handler = {
+      get(target, key, receiver) {
+        console.log('get', key, target)
+      },
+      set(target, key, value, receiver) {
+        console.log('set', key, value)
+        return value
+      },
+      deleteProperty(target, key) {
+        console.log('delete', key)
+        return target
+      },
+    }
+  
+    return new Proxy(target, handler)
+  }
+  ```
+
+  测试set和delete，结果如下
 
   ![image-20210414082410979](C:\Users\xiang wang\AppData\Roaming\Typora\typora-user-images\image-20210414082410979.png)
+
+  reactive实现思路：
+
+  1. 定义handler对象，用于Proxy的第二个参数（拦截器对象）
+  2. get方法实现
+     - 收集依赖
+     - 返回target中对于key的value
+     - 如果value为对象，需要再次转为响应式对象
+  3. set方法中实现
+     - 获取key属性的值，判断新旧值是否相同，相同时返回true
+     - 不同时，先将target中的key对应的value修改为新值
+     - 最后触发更新
+  4. deleteProperty方法实现
+     - 首先判断target本身是否存在key
+     - 删除target中的key，并返回成功或失败
+     - 删除成功，触发更新
+
+  代码示例：
+
+  ```js
+  const isObject = (val) => val !== null && typeof val === 'object'
+  const convert = (val) => (isObject(val) ? reactive(val) : val)
+  const hasOwnProperty = Object.prototype.hasOwnProperty
+  const hasOwn = (target, key) => hasOwnProperty.call(target, key)
+  
+  export function reactive(target) {
+    if (!isObject(target)) return
+  
+    const handler = {
+      get(target, key, receiver) {
+        // 收集依赖
+        const value = Reflect.get(target, key, receiver)
+        return convert(value)
+      },
+      set(target, key, value, receiver) {
+        const oldValue = Reflect.get(target, key, receiver)
+        let result = true
+        if (oldValue !== value) {
+          let result = Reflect.set(target, key, value, receiver)
+          // 触发更新
+        }
+        return result
+      },
+      deleteProperty(target, key) {
+        const hasKey = hasOwn(target, key)
+        const result = Reflect.deleteProperty(target, key)
+        if (hasKey && result) {
+          // 触发更新
+        }
+        return result
+      },
+    }
+  
+    return new Proxy(target, handler)
+  }
+  ```
+
+  测试，创建html文件进行测试：
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+  </head>
+  <body>
+    <script type="module">
+      import { reactive } from './reactivity/index.js'
+      const obj = reactive({
+        name: 'zs',
+        age: 18
+      })
+      obj.name = 'lisi'
+      delete obj.age
+      console.log(obj)
+    </script>
+  </body>
+  </html>
+  ```
 
 ##### 响应式系统原理——收集依赖
 
